@@ -100,7 +100,8 @@ class Widget_Zero extends WP_Widget {
 	function label_for($fieldname){
 		$label = $this->fields[$fieldname]['label'];
 		if (!$label) $label = $this->default_labelname_for($fieldname);
-		$out = '<label for="' . $this->get_field_id($fieldname) . '">' . $label . ':</label>'."\n";
+		if (!in_array( substr($label, -1), array(':','?') )) $label .= ':';
+		$out = '<label for="' . $this->get_field_id($fieldname) . '">' . $label . '</label>'."\n";
 		return $out;
 	}
 	

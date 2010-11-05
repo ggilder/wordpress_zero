@@ -64,7 +64,7 @@ class Widget_Zero extends WP_Widget {
 			default: // default is text
 				$out .= $this->form_textfield($fieldname, $value);
 		}
-		$out .= $this->note_for($fieldname);
+		$out .= '<br>'.$this->note_for($fieldname);
 		$out = '<p>'.$out.'</p>';
 		return $out;
 	}
@@ -93,7 +93,7 @@ class Widget_Zero extends WP_Widget {
 	
 	function form_checkbox($fieldname, &$value){
 		$out = '<input type="hidden" name="'.$this->get_field_name($fieldname).'" value="false">';
-		$out .= '<input '.$this->id_and_name_for($fieldname).' type="checkbox" '. checked($value).'/>';
+		$out .= '<input '.$this->id_and_name_for($fieldname).' type="checkbox" '. checked($value, true, false).'/>';
 		return $out;
 	}
 	
@@ -124,11 +124,17 @@ class Widget_Zero extends WP_Widget {
 	function update($new_instance, $old_instance){
 		$instance = $old_instance;
 		foreach ($this->fields as $field => $options){
-			if ($options['type'] == 'select') {
-				// validate menu selection
-				$instance[$field] = validate_option($new_instance[$field], $field);
+			switch ($options['type']){
+				case 'select':
+					// validate menu selection
+					$instance[$field] = validate_option($new_instance[$field], $field);
+					break;
+				case 'checkbox':
+					$instance[$field] = ((!empty($new_instance[$field])) && ($new_instance[$field] != 'false')) ? true : false;
+					break;
+				default:
+					$instance[$field] = $new_instance[$field];
 			}
-			$instance[$field] = $new_instance[$field];
 		}
 		return $instance;
 	}

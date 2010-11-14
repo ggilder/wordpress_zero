@@ -1,4 +1,7 @@
 TODO:
+- Add an init file to make it easier to load the classes?
+- Move classes into lib subdir?
+- Figure out how to write tests for this...
 - Add more tags/options/validation to HTMLHelper
 - Metabox - separate out default field rendering into another function and make it easier to override the field rendering part in a subclass
 - Widget - make it easier to set fields, more like Metabox

@@ -1,6 +1,30 @@
 <?php
 /**
 * Metabox Zero. Make the meta boxes easier.
+* Usage example:
+* 
+* $post_box_fields = array(
+* 	array(
+* 		'name' => '_page_title',
+* 		'label' => 'Browser Window Title',
+* 		'size' => 90
+* 	),
+* 	array(
+* 		'name' => '_meta_description',
+* 		'size' => 90
+* 	),
+* );
+* 
+* $post_box_info = array(
+* 	'id' => 'my_post_meta',
+* 	'title' => 'Post Info',
+* 	'page' => 'post',
+* 	'position' => 'normal',
+* 	'priority' => 'high'
+* );
+* 
+* new MetaboxZero($post_box_info, $post_box_fields);
+* 
 */
 class MetaboxZero
 {

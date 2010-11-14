@@ -2,12 +2,12 @@
 /**
  * Class to abstract out some common functionality for WordPress widgets.
  * Inherit from this class in your widget - e.g.:
- * class My_Widget extends Widget_Zero { ... }
+ * class MyWidget extends WidgetZero { ... }
  *
  * @author Gabriel Gilder
  */
 
-class Widget_Zero extends WP_Widget {
+class WidgetZero extends WP_Widget {
 	
 	function add_field($name, $options=array()) {
 		$this->fields[$name] = $options;

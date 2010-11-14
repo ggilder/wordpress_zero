@@ -97,7 +97,6 @@ class MetaboxZero
 	
 	function saveMetaboxContent($post_id)
 	{
-		echo "magic land!";
 		// verify nonce
 		if (!wp_verify_nonce($_POST[$this->noncename], basename(__FILE__))) {
 			return $post_id;

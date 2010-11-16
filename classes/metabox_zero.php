@@ -68,8 +68,10 @@ class MetaboxZero
 	private function validateFields($input)
 	{
 		$fields = array();
+		$usedFieldNames = array();
 		foreach($input as $fieldArray){
-			if ($fieldArray['name']){
+			if ($fieldArray['name'] && !in_array($fieldArray['name'], $usedFieldNames)){
+				$usedFieldNames[] = $fieldArray['name'];
 				$fields[] = $fieldArray;
 			}
 		}

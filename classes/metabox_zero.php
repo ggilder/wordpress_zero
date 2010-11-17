@@ -68,8 +68,13 @@ class MetaboxZero
 	private function validateFields($input)
 	{
 		$fields = array();
+		$usedFieldNames = array();
 		foreach($input as $fieldArray){
 			if ($fieldArray['name']){
+				if (in_array($fieldArray['name'], $usedFieldNames)){
+					throw new Exception('Fatal attempted reuse of field name '.$fieldArray['name'].'!');
+				}
+				$usedFieldNames[] = $fieldArray['name'];
 				$fields[] = $fieldArray;
 			}
 		}

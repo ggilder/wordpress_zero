@@ -8,132 +8,125 @@
  */
 
 class WidgetZero extends WP_Widget {
+	private $fields = null;
 	
-	function add_field($name, $options=array()) {
-		$this->fields[$name] = $options;
+	final function set_fields($fields)
+	{
+		$this->fields = $this->sanitizeFields($fields);
+	}
+	
+	private function sanitizeFields($input)
+	{
+		$fields = array();
+		$usedFieldNames = array();
+		foreach($input as $fieldArray){
+			if (is_array($fieldArray) && $fieldArray['name']){
+				if (in_array($fieldArray['name'], $usedFieldNames)){
+					throw new Exception('Fatal attempted reuse of field name '.$fieldArray['name'].'!');
+				}
+				$usedFieldNames[] = $fieldArray['name'];
+				$fields[] = $fieldArray;
+			}
+		}
+		return $fields;
+	}
+	
+	function get_field_info($name){
+		foreach( $this->fields as $field )
+		{
+			if ($field['name'] == $name) return $field;
+		}
+		return false;
 	}
 	
 	function get_field_value($name, &$instance){
-		if ($this->fields[$name]['default'] && !$instance[$name]){
-			return $this->fields[$name]['default'];
-		} elseif ($this->fields[$name]['type'] == 'select') {
-			return validate_option($instance[$name], $name);
+		$field = $this->get_field_info($name);
+		if ($field['default'] && $instance[$name] != ''){
+			return $field['default'];
+		} elseif ($field['type'] == 'select') {
+			return $this->sanitize_option($instance[$name], $field);
 		} else {
 			return esc_attr($instance[$name]);
 		}
 	}
 	
-	function validate_option($option, $fieldname){
-		if (array_key_exists($option, $this->fields[$fieldname]['optionlist'])){
+	function sanitize_option($option, $field){
+		if (array_key_exists($option, $field['optionlist'])){
 			return $option;
 		} else {
-			$keys = array_keys($this->fields[$fieldname]['optionlist']);
+			$keys = array_keys($field['optionlist']);
 			return $keys[0];
 		}
 	}
 	
 	function form_all_fields(&$instance){
-		$fields = $this->ordered_field_names();
 		$out = '';
-		foreach ($fields as $fieldname) {
-			$out .= $this->form_field($fieldname, $instance[$fieldname]);
+		foreach ($this->fields as $field) {
+			$out .= $this->form_field($field, $instance[$field['name']]);
 		}
 		return $out;
 	}
 	
-	function ordered_field_names(){
-		$names = array();
-		$orders = array();
-		foreach ($this->fields as $field => $options){
-			$names[] = $field;
-			$orders[] = $options['order'];
-		}
-		array_multisort($orders, SORT_ASC, SORT_NUMERIC, $names, SORT_ASC, SORT_STRING);
-		return $names;
-	}
-	
-	function form_field($fieldname, &$value){
-		$out = $this->label_for($fieldname);
-		switch($this->fields[$fieldname]['type']){
+	function form_field($field, &$value){
+		$this->add_widget_id_and_name($field);
+		$out = $this->label_for($field);
+		
+		$field['tag']['type'] = $field['type'];
+		if ($field['size']) $field['tag']['size'] = $field['size'];
+		$field['tag']['value'] = $value;
+		
+		switch($field['type'])
+		{
 			case 'select':
-				$out .= $this->form_menu($fieldname, $value);
-				break;
-			case 'checkbox':
-				$out .= $this->form_checkbox($fieldname, $value);
-				break;
-			default: // default is text
-				$out .= $this->form_textfield($fieldname, $value);
+			case 'menu':
+				$field['tag']['options'] = $field['optionlist'];
+			default:
+				$out .= HTMLHelper::formfield($field['tag']);
 		}
-		$out .= '<br>'.$this->note_for($fieldname);
-		$out = '<p>'.$out.'</p>';
-		return $out;
+		
+		$out .= HTMLHelper::br().$this->note_for($field);
+		return HTMLHelper::p(array(), $out);
 	}
 	
-	function form_menu($fieldname, &$selected){
-		$out = '<select '.$this->id_and_name_for($fieldname).'>';
-		foreach ($this->fields[$fieldname]['optionlist'] as $key => $val) {
-			$out .= '<option value="'.$key.'"';
-			if ($key == $selected) {
-				$out .= ' selected="selected"';
-			}
-			$out .= '>'.$val.'</option>';
+	function add_widget_id_and_name(&$field)
+	{
+		if (!is_array($field['tag'])){
+			$field['tag'] = array();
 		}
-		$out .= '</select>';
-		return $out;
+		$field['tag']['id'] = $this->get_field_id($field['name']);
+		$field['tag']['name'] = $this->get_field_name($field['name']);
 	}
 	
-	function form_textfield($fieldname, &$value){
-		$out = '<input '.$this->id_and_name_for($fieldname).' type="text" value="'.$value.'"';
-		if ($this->fields[$fieldname]['size']) {
-			$out .= ' size="'.$this->fields[$fieldname]['size'].'"';
-		}
-		$out .= '/>';
-		return $out;
+	function label_for($field){
+		$label = $field['label'];
+		if (!$label) $label = NameHelper::naturalizeFieldName($field['name']);
+		$label = NameHelper::prepLabelName($label);
+		$options = array('for'=>$field['tag']['id'], 'class'=>$field['tag']['name'].'_label');
+		return HTMLHelper::label($options, $label);
 	}
 	
-	function form_checkbox($fieldname, &$value){
-		$out = '<input type="hidden" name="'.$this->get_field_name($fieldname).'" value="false">';
-		$out .= '<input '.$this->id_and_name_for($fieldname).' type="checkbox" '. checked($value, true, false).'/>';
-		return $out;
-	}
-	
-	function label_for($fieldname){
-		$label = $this->fields[$fieldname]['label'];
-		if (!$label) $label = $this->default_labelname_for($fieldname);
-		if (!in_array( substr($label, -1), array(':','?') )) $label .= ':';
-		$out = '<label for="' . $this->get_field_id($fieldname) . '">' . $label . '</label>'."\n";
-		return $out;
-	}
-	
-	function default_labelname_for($fieldname){
-		return ucwords(str_replace('_',' ',$fieldname));
-	}
-	
-	function id_and_name_for($fieldname){
-		return 'id="'.$this->get_field_id($fieldname).'" name="'.$this->get_field_name($fieldname).'"';
-	}
-	
-	function note_for($fieldname){
+	function note_for($field){
 		$out = '';
-		if ($this->fields[$fieldname]['note']){
-			$out = '<small>'.$this->fields[$fieldname]['note'].'</small>';
+		if ($field['note']){
+			$out = HTMLHelper::tag('small', array(), $field['note']);
 		}
 		return $out;
 	}
 	
 	function update($new_instance, $old_instance){
 		$instance = $old_instance;
-		foreach ($this->fields as $field => $options){
-			switch ($options['type']){
+		foreach ($this->fields as $field){
+			$fieldname = $field['name'];
+			switch ($field['type']){
 				case 'select':
 					// validate menu selection
-					$instance[$field] = validate_option($new_instance[$field], $field);
+					$instance[$fieldname] = sanitize_option($new_instance[$fieldname], $field);
 					break;
-				case 'checkbox':
-					$instance[$field] = ((!empty($new_instance[$field])) && ($new_instance[$field] != 'false')) ? true : false;
+				case 'toggle':
+					$instance[$fieldname] = ((!empty($new_instance[$fieldname])) && ($new_instance[$fieldname] != 'false')) ? true : false;
 					break;
 				default:
-					$instance[$field] = $new_instance[$field];
+					$instance[$fieldname] = $new_instance[$fieldname];
 			}
 		}
 		return $instance;

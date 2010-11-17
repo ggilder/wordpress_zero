@@ -7,17 +7,33 @@ class HTMLHelper
 	public static function formfield($options=array())
 	{
 		switch($options['type']){
+			case 'select':
+			case 'menu':
+				unset($options['type']);
+				return self::select($options);
 			case 'toggle':
 				return self::toggle($options);
 			case 'textarea':
+				unset($options['type']);
 				return self::textarea($options);
 			case 'text':
-			case 'input':
 			default:
 				return self::input($options);
 		}
 	}
 	
+	public static function select($params=array())
+	{
+		$list = '';
+		foreach($params['options'] as $value => $label)
+		{
+			$item_params = array('value'=>$value);
+			if ($value == $params['value']) $item_params['selected'] = 'selected';
+			$list .= self::tag('option', $item_params, $label);
+		}
+		unset($params['options'], $params['value']);
+		return self::tag('select', $params, $list);
+	}
 	/**
 	 * Special form field generator for a toggle, that is, a single checkbox field with a default false value in a hidden field
 	 *
@@ -47,10 +63,11 @@ class HTMLHelper
 	
 	public static function label($options=array(), $content)
 	{
-		return self::tag('label', $options, $content);
+		return self::tag('label', $options, htmlspecialchars($content));
 	}
 	public static function input($options=array())
 	{
+		if (!$options['type']) $options['type'] = 'text';
 		return self::tag('input', $options);
 	}
 	public static function textarea($options=array())
@@ -58,15 +75,26 @@ class HTMLHelper
 		$content = false;
 		if (isset($options['value'])) $content = $options['value'];
 		unset($options['value']);
-		return self::tag('textarea', $options, $content);
+		return self::tag('textarea', $options, htmlspecialchars($content));
 	}
 	
 	
+	public static function br($options=array())
+	{
+		return self::tag('br', $options);
+	}
+	public static function p($options=array(), $content)
+	{
+		return self::tag('p', $options, $content);
+	}
 	
+
 	public static function tag($tag, $attributes=array(), $content=false)
 	{
 		$out = '<'.$tag;
 		foreach($attributes as $key => $val){
+			// key name must be valid for HTML attributes
+			if (!preg_match('/^[a-zA-Z_:][-a-zA-Z0-9_:\.]*$/', $key)) continue;
 			if ($val === true){
 				$out .= ' '.$key;
 			} elseif ($val === false || $val === null){

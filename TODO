@@ -1,5 +1,4 @@
 TODO:
-- Widget - test select/menu & toggle fields
 - Widget - move some common option setting and widget activation stuff into class
 - Widget - make it easier to override update/form/etc? callbacks?
 - Add more tags/options/validation to HTMLHelper

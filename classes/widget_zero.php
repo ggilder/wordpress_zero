@@ -8,7 +8,7 @@
  */
 
 class WidgetZero extends WP_Widget {
-	private $fields = null;
+	private $fields = array();
 	
 	final function set_fields($fields)
 	{

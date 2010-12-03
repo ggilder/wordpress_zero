@@ -1,8 +1,9 @@
 TODO:
-- Widget - make it easier to set fields, more like Metabox
-- Widget - move html generating stuff into HTMLHelper, adapt functions to use HTMLHelper
+- Widget - move some common option setting and widget activation stuff into class
+- Widget - make it easier to override update/form/etc? callbacks?
 - Add more tags/options/validation to HTMLHelper
 - Figure out how to write tests for this...
 - Metabox - separate out default field rendering into another function and make it easier to override the field rendering part in a subclass
 - Improve docs! Add examples!
 - Add stuff for generating admin pages?
+

@@ -17,9 +17,8 @@ Class to abstract out some common functionality for WordPress widgets.
 
 Example:
 
-	add_action('widgets_init', create_function('', "register_widget('MyWidget');"));
 	class MyWidget extends WidgetZero {
-		function __construct() {
+		function MyWidget() {
 			$widget_ops = array('classname' => 'mywidget_class', 'description' => __( "My Widget does something") );
 			$this->WP_Widget('mywidget_id', __('My Widget'), $widget_ops);
 		
@@ -56,6 +55,11 @@ Example:
 			echo $args['after_widget'];
 		}
 	}
+	
+If you are putting your widget file somewhere other than the plugins directory (for example building a widget in to your theme) you will also need to register your widget somewhere:
+	
+	add_action('widgets_init', create_function('', "register_widget('MyWidget');"));
+
 
 
 ### MetaboxZero ###

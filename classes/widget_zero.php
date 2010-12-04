@@ -80,9 +80,13 @@ class WidgetZero extends WP_Widget {
 			case 'select':
 			case 'menu':
 				$field['tag']['options'] = $field['optionlist'];
-			default:
-				$out .= HTMLHelper::formfield($field['tag']);
+				break;
+			case '':
+			case 'text':
+				if (!$field['tag']['class'] && !$field['tag']['size']) $field['tag']['class'] = 'widefat';
+				break;
 		}
+		$out .= HTMLHelper::formfield($field['tag']);
 		
 		$out .= HTMLHelper::br().$this->note_for($field);
 		return HTMLHelper::p(array(), $out);
@@ -102,6 +106,11 @@ class WidgetZero extends WP_Widget {
 		if (!$label) $label = NameHelper::naturalizeFieldName($field['name']);
 		$label = NameHelper::prepLabelName($label);
 		$options = array('for'=>$field['tag']['id'], 'class'=>$field['tag']['name'].'_label');
+		if (!$field['type'] || $field['type'] == 'text'){
+			$options['style'] = 'display:block;'.$options['style'];
+		} else {
+			$options['style'] = 'margin-right:0.5em;'.$options['style'];
+		}
 		return HTMLHelper::label($options, $label);
 	}
 	

@@ -35,10 +35,24 @@ Example:
 					'default'=>'5'
 				),
 				array(
-					'name'=>'chrysalis_length',
+					'name'=>'chrysalis_length', // label will automatically be rendered as "Chrysalis Length:"
 					'size' => '3',
 					'default' => '0',
 					'note' => 'Leave blank for no chrysalis'
+				),
+				array(
+					'name'=>'awesome',
+					'label'=>'Make it awesome?',
+					'type'=>'toggle'
+				),
+				array(
+					'name'=>'giraffe_type',
+					'type'=>'select',
+					'optionlist'=>array(
+						'tall' => 'Tall giraffes',
+						'short' => 'Short giraffes',
+						'mixed' => 'All kinds of giraffes'
+					)
 				)
 			)
 			);
@@ -51,7 +65,18 @@ Example:
 		
 			printf("<p>We have %s giraffes!</p>", $this->get_field_value('number'));
 			printf("<p>In a chrysalis %s units in length!</p>", $this->get_field_value('chrysalis_length'));
-		
+			switch($this->get_field_value('giraffe_type')){
+				case 'tall':
+					echo "<p>Those giraffes are pretty tall.</p>";
+				case 'short':
+					echo "<p>Those giraffes are kind of short.</p>";
+				case 'mixed':
+					echo "<p>Wow, all kinds of giraffes!</p>";
+			}
+			if ($this->get_field_value('awesome')){
+				echo "<p>Awesome!</p>";
+			}
+			
 			echo $args['after_widget'];
 		}
 	}

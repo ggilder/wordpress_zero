@@ -7,8 +7,9 @@
  * @author Gabriel Gilder
  */
 
-class WidgetZero extends WP_Widget {
+abstract class WidgetZero extends WP_Widget {
 	private $fields = array();
+	abstract public function render($fields);
 	
 	final function set_fields($fields)
 	{
@@ -31,7 +32,7 @@ class WidgetZero extends WP_Widget {
 		return $fields;
 	}
 	
-	function get_field_info($name){
+	final function get_field_info($name){
 		foreach( $this->fields as $field )
 		{
 			if ($field['name'] == $name) return $field;
@@ -39,18 +40,30 @@ class WidgetZero extends WP_Widget {
 		return false;
 	}
 	
-	function get_field_value($name, &$instance){
+	final function get_field_value($name){
+		if (!$this->instance){
+			throw new Exception("get_field_value called in non-render context!");
+		}
 		$field = $this->get_field_info($name);
-		if ($field['default'] && $instance[$name] != ''){
+		if ($field['default'] && $this->instance[$name] != ''){
 			return $field['default'];
 		} elseif ($field['type'] == 'select') {
-			return $this->sanitize_option($instance[$name], $field);
+			return $this->sanitize_option($this->instance[$name], $field);
 		} else {
-			return esc_attr($instance[$name]);
+			return esc_attr($this->instance[$name]);
 		}
 	}
 	
-	function sanitize_option($option, $field){
+	final function get_all_field_values()
+	{
+		$data = array();
+		foreach ($this->fields as $field){
+			$data[$field['name']] = $this->get_field_value($field['name']);
+		}
+		return $data;
+	}
+	
+	final function sanitize_option($option, $field){
 		if (array_key_exists($option, $field['optionlist'])){
 			return $option;
 		} else {
@@ -59,7 +72,7 @@ class WidgetZero extends WP_Widget {
 		}
 	}
 	
-	function form_all_fields(&$instance){
+	final function form_all_fields(&$instance){
 		$out = '';
 		foreach ($this->fields as $field) {
 			$out .= $this->form_field($field, $instance[$field['name']]);
@@ -67,7 +80,7 @@ class WidgetZero extends WP_Widget {
 		return $out;
 	}
 	
-	function form_field($field, &$value){
+	final function form_field($field, &$value){
 		$this->add_widget_id_and_name($field);
 		$out = $this->label_for($field);
 		
@@ -92,7 +105,7 @@ class WidgetZero extends WP_Widget {
 		return HTMLHelper::p(array(), $out);
 	}
 	
-	function add_widget_id_and_name(&$field)
+	final function add_widget_id_and_name(&$field)
 	{
 		if (!is_array($field['tag'])){
 			$field['tag'] = array();
@@ -101,7 +114,7 @@ class WidgetZero extends WP_Widget {
 		$field['tag']['name'] = $this->get_field_name($field['name']);
 	}
 	
-	function label_for($field){
+	final function label_for($field){
 		$label = $field['label'];
 		if (!$label) $label = NameHelper::naturalizeFieldName($field['name']);
 		$label = NameHelper::prepLabelName($label);
@@ -114,7 +127,7 @@ class WidgetZero extends WP_Widget {
 		return HTMLHelper::label($options, $label);
 	}
 	
-	function note_for($field){
+	final function note_for($field){
 		$out = '';
 		if ($field['note']){
 			$out = HTMLHelper::tag('small', array(), $field['note']);
@@ -129,7 +142,7 @@ class WidgetZero extends WP_Widget {
 			switch ($field['type']){
 				case 'select':
 					// validate menu selection
-					$instance[$fieldname] = sanitize_option($new_instance[$fieldname], $field);
+					$instance[$fieldname] = $this->sanitize_option($new_instance[$fieldname], $field);
 					break;
 				case 'toggle':
 					$instance[$fieldname] = ((!empty($new_instance[$fieldname])) && ($new_instance[$fieldname] != 'false')) ? true : false;
@@ -143,6 +156,19 @@ class WidgetZero extends WP_Widget {
 	
 	function form( $instance ) {
 		echo $this->form_all_fields($instance);
+	}
+	
+	final function widget($args, $instance) {
+		$this->instance = $instance;
+		$this->args = $args;
+		$this->render($this->get_all_field_values());
+	}
+	
+	final function template($arg) {
+		if (!array_key_exists($arg, $this->args)){
+			throw new Exception("Invalid template part {$arg}!");
+		}
+		return $this->args[$arg];
 	}
 }
 

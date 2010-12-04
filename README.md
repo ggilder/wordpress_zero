@@ -17,6 +17,7 @@ Class to abstract out some common functionality for WordPress widgets.
 
 Example:
 
+	add_action('widgets_init', create_function('', "register_widget('MyWidget');"));
 	class MyWidget extends WidgetZero {
 		function MyWidget() {
 			$widget_ops = array('classname' => 'mywidget_class', 'description' => __( "My Widget does something") );
@@ -57,15 +58,15 @@ Example:
 			)
 			);
 		}
-		function widget($args, $instance) {
-			echo $args['before_widget'];
+		function render($fields) {
+			echo $this->template('before_widget');
 		
-			$title = $this->get_field_value('title', $instance);
-			if ( $title ) echo $args['before_title'] . $title . $args['after_title'];
+			$title = apply_filters('widget_title', $fields['title']);
+			if ( $title ) echo $this->template('before_title') . $title . $this->template('after_title');
 		
-			printf("<p>We have %s giraffes!</p>", $this->get_field_value('number'));
-			printf("<p>In a chrysalis %s units in length!</p>", $this->get_field_value('chrysalis_length'));
-			switch($this->get_field_value('giraffe_type')){
+			printf("<p>We have %s giraffes!</p>", $fields['number']);
+			printf("<p>In a chrysalis %s units in length!</p>", $fields['chrysalis_length']);
+			switch($fields['giraffe_type']){
 				case 'tall':
 					echo "<p>Those giraffes are pretty tall.</p>";
 				case 'short':
@@ -73,17 +74,13 @@ Example:
 				case 'mixed':
 					echo "<p>Wow, all kinds of giraffes!</p>";
 			}
-			if ($this->get_field_value('awesome')){
+			if ($fields['awesome']){
 				echo "<p>Awesome!</p>";
 			}
 			
-			echo $args['after_widget'];
+			echo $this->template('after_widget');
 		}
 	}
-	
-If you are putting your widget file somewhere other than the plugins directory (for example building a widget in to your theme) you will also need to register your widget somewhere:
-	
-	add_action('widgets_init', create_function('', "register_widget('MyWidget');"));
 
 
 

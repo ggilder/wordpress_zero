@@ -6,7 +6,7 @@ Classes to abstract out some common functionality for WordPress and generally ma
 Requirements
 ------------
 
-This has only been tested with PHP 5.2+ and will probably break with anything older.
+This has only been tested with PHP 5.2+ and will probably break with anything older. PHP 5.3+ is recommended.
 
 Usage
 -----
@@ -101,12 +101,14 @@ Example:
 			'size' => 90
 		),
 	);
-
+	
+	// see WordPress documentation at http://codex.wordpress.org/Function_Reference/add_meta_box
+	// for acceptable parameters for position (aka context) and priority
 	$post_box_info = array(
 		'id' => 'my_post_meta',
 		'title' => 'Post Info',
-		'page' => 'post',
-		'position' => 'normal',
+		'page' => 'post',        // can use post, page, or name of a custom post type
+		'position' => 'normal',  
 		'priority' => 'high'
 	);
 

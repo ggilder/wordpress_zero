@@ -45,7 +45,7 @@ abstract class WidgetZero extends WP_Widget {
 			throw new Exception("get_field_value called in non-render context!");
 		}
 		$field = $this->get_field_info($name);
-		if ($field['default'] && $this->instance[$name] != ''){
+		if ($field['default'] && $this->instance[$name] == ''){
 			return $field['default'];
 		} elseif ($field['type'] == 'select') {
 			return $this->sanitize_option($this->instance[$name], $field);

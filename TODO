@@ -2,6 +2,8 @@ TODO:
 - Widget - make it easier to override update/form? callbacks?
 - Metabox - add ability to handle multiple values for fields
 - Add more tags/options/validation to HTMLHelper
+	- Radio buttons
+	- Test multi-checkbox on WidgetZero
 - Figure out how to write tests for this...
 - Improve docs! Add examples!
 - Add stuff for generating admin pages?

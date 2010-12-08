@@ -111,20 +111,31 @@ class MetaboxZero
 			
 			$out .= HTMLHelper::label(array('for'=>$field['name'], 'style'=>'display:block;'), $field['label']);
 			
-			$out .= HTMLHelper::formfield(array(
+			$tag = array(
 				'type' => $field['type'],
 				'name' => $field['name'],
 				'id' => $field['name'],
 				'size' => $field['size'],
 				'style' => $field['style'],
 				'value' => $meta,
-			));
+			);
+			switch ($field['type']){
+				case 'select':
+				case 'menu':
+				case 'checkbox':
+				case 'radio':
+					$tag['options'] = $field['optionlist'];
+					break;
+			}
+			
+			$out .= HTMLHelper::formfield($tag);
 			
 			if ($field['notes']){
 				$out .= '<br>'.$field['notes'];
 			}
 		}
 		
+		$out .= '<div style="clear:both;"></div>';
 		echo $out;
 	}
 	

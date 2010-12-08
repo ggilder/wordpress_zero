@@ -92,6 +92,8 @@ abstract class WidgetZero extends WP_Widget {
 		{
 			case 'select':
 			case 'menu':
+			case 'checkbox':
+			case 'radio':
 				$field['tag']['options'] = $field['optionlist'];
 				break;
 			case '':

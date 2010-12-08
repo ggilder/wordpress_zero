@@ -7,6 +7,9 @@ class HTMLHelper
 	public static function formfield($options=array())
 	{
 		switch($options['type']){
+			case 'checkbox':
+				unset($options['type']);
+				return self::checkbox_list($options);
 			case 'select':
 			case 'menu':
 				unset($options['type']);
@@ -34,6 +37,27 @@ class HTMLHelper
 		unset($params['options'], $params['value']);
 		return self::tag('select', $params, $list);
 	}
+	
+	public static function checkbox_list($params=array())
+	{
+		if (!is_array($params['value'])) $params['value'] = array($params['value']);
+		$list = '';
+		$i = 1;
+		foreach($params['options'] as $value => $label)
+		{
+			$item_params = array('value'=>$value);
+			if (in_array($value, $params['value'])) $item_params['checked'] = 'checked';
+			$item_params['type'] = 'checkbox';
+			$item_params['name'] = $params['name'] . '[]';
+			$item_params['id'] = $params['id'] . '_' . $i;
+			$item_params['class'] .= ' checkbox';
+			$list .= self::tag('input', $item_params);
+			$list .= self::tag('label', array('for'=>$item_params['id'], 'class'=>'checkbox_label'), $label);
+			$i++;
+		}
+		return $list;
+	}
+	
 	/**
 	 * Special form field generator for a toggle, that is, a single checkbox field with a default false value in a hidden field
 	 *

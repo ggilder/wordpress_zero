@@ -153,6 +153,7 @@ abstract class WidgetZero extends WP_Widget {
 					$instance[$fieldname] = $new_instance[$fieldname];
 			}
 		}
+		$this->after_update($new_instance, $old_instance);
 		return $instance;
 	}
 	
@@ -172,6 +173,11 @@ abstract class WidgetZero extends WP_Widget {
 		}
 		return $this->args[$arg];
 	}
+	
+	protected function after_update($new_instance, $old_instance){
+		// override this in subclasses
+	}
+	
 }
 
 

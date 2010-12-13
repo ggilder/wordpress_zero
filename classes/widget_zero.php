@@ -87,6 +87,7 @@ abstract class WidgetZero extends WP_Widget {
 		$field['tag']['type'] = $field['type'];
 		if ($field['size']) $field['tag']['size'] = $field['size'];
 		$field['tag']['value'] = $value;
+		if ($field['style']) $field['tag']['style'] = $field['style'];
 		
 		switch($field['type'])
 		{

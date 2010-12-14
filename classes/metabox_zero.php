@@ -133,9 +133,10 @@ class MetaboxZero
 			if ($field['notes']){
 				$out .= '<br>'.$field['notes'];
 			}
+			
+			$out .= '<div style="clear:both;"></div>';
 		}
 		
-		$out .= '<div style="clear:both;"></div>';
 		echo $out;
 	}
 	

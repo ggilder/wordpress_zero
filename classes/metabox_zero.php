@@ -109,7 +109,7 @@ class MetaboxZero
 			
 			$meta = get_post_meta($post->ID, $field['name'], true);
 			
-			$out .= HTMLHelper::label(array('for'=>$field['name'], 'style'=>'display:block;'), $field['label']);
+			$out .= HTMLHelper::label(array('for'=>$field['name'], 'style'=>'display:block;', 'class'=>'field_label'), $field['label']);
 			
 			$tag = array(
 				'type' => $field['type'],
@@ -128,7 +128,7 @@ class MetaboxZero
 					break;
 			}
 			
-			$out .= HTMLHelper::formfield($tag);
+			$out .= sprintf('<div class="field">%s</div>', HTMLHelper::formfield($tag));
 			
 			if ($field['notes']){
 				$out .= '<br>'.$field['notes'];

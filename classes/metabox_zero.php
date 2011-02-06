@@ -42,8 +42,12 @@ class MetaboxZero
 		);
 		// merge in argument
 		$this->info = array_merge($this->info, $info);
-		// set noncename based on id
-		$this->noncename = $this->info['id'].'_nonce';
+		
+		/* would be good to have unique noncename, but setting noncename based on id 
+		 * doesn't seem to work when you have custom metaboxes for generic posts and
+		 * custom post types... sadly
+		 */
+		$this->noncename = 'metabox_zero_nonce';
 		
 		// set up fields
 		$this->fields = $this->validateFields($fields);
@@ -60,7 +64,7 @@ class MetaboxZero
 		}
 		// then iterate through page array
 		foreach ($this->info['page'] as $page){
-			add_meta_box( $this->info['id'], $this->info['title'], array($this, 'renderMetabox'),
+			add_meta_box( $this->info['id'], $this->info['title'], array(&$this, 'renderMetabox'),
 				$page, $this->info['position'], $this->info['priority'] );
 		}
 	}
@@ -75,6 +79,8 @@ class MetaboxZero
 					throw new Exception('Fatal attempted reuse of field name '.$fieldArray['name'].'!');
 				}
 				$usedFieldNames[] = $fieldArray['name'];
+				// set option for multiple values in field
+				if (!array_key_exists('multiple', $fieldArray)) $fieldArray['multiple'] = 'serialize';
 				$fields[] = $fieldArray;
 			}
 		}
@@ -85,6 +91,9 @@ class MetaboxZero
 	{
 		global $post;
 		if ($this->info['render_callback']){
+			echo HTMLHelper::input(array(
+				'type' => 'hidden', 'name' => $this->noncename, 'value' => wp_create_nonce(basename(__FILE__))
+			));
 			call_user_func($this->info['render_callback'], $post);
 			return;
 		}
@@ -142,12 +151,19 @@ class MetaboxZero
 	
 	function saveMetaboxContent($post_id)
 	{
-		// verify nonce
-		if (!wp_verify_nonce($_POST[$this->noncename], basename(__FILE__))) {
-			return $post_id;
-		}
 		// check autosave
 		if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+			return $post_id;
+		}
+		// check for actual post data
+		if (count($_POST) == 0){
+			// no post data, this is getting called by mistake (?) when wordpress adds a new page
+			return $post_id;
+		}
+		// verify nonce
+		if (!wp_verify_nonce($_POST[$this->noncename], basename(__FILE__))) {
+			var_export($_POST);
+			die("bad nonce! nonce: {$this->noncename} value: {$_POST[$this->noncename]} post id: {$post_id}");
 			return $post_id;
 		}
 		// check permissions
@@ -159,10 +175,33 @@ class MetaboxZero
 			return $post_id;
 		}
 		
+		// optional custom callback
+		if ($this->info['save_callback']){
+			call_user_func($this->info['save_callback'], $post_id, $_POST);
+			return;
+		}
+		
 		// save fields
 		foreach ($this->fields as $field){
 			$old = get_post_meta($post_id, $field['name'], true);
 			$new = $_POST[$field['name']];
+			if (is_array($new)) {
+				// save multiple meta entries if set to individual
+				if ($field['multiple'] == 'individual') {
+					// we could diff against old array, but here i'm just deleting all the old values.
+					// this has the advantage of maintaining the order of the array since we reinsert all the values.
+					delete_post_meta($post_id, $field['name']);
+					foreach ($new as $newvalue){
+						add_post_meta($post_id, $field['name'], $newvalue);
+					}
+					
+					// skip normal meta processing
+					continue;
+				} else {
+					// default: serialize meta to one entry
+					$new = serialize($new);
+				}
+			}
 			if ($new !== '' && $new != $old) {
 				update_post_meta($post_id, $field['name'], $new);
 			} elseif (($new == '') && ($old != '')) {
@@ -173,8 +212,8 @@ class MetaboxZero
 	
 	function initMetaBox()
 	{
-		$t1 = add_action('admin_menu', array($this, 'registerMetabox'));
-		$t2 = add_action('save_post', array($this, 'saveMetaboxContent'));
+		add_action('admin_menu', array(&$this, 'registerMetabox'));
+		add_action('save_post', array(&$this, 'saveMetaboxContent'));
 	}
 }
 

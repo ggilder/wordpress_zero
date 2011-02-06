@@ -32,6 +32,11 @@ class HTMLHelper
 		{
 			$item_params = array('value'=>$value);
 			if ($value == $params['value']) $item_params['selected'] = 'selected';
+			// disabled items
+			if (preg_match('/^\{disabled\}/', $label)){
+				$item_params['disabled'] = 'disabled';
+				$label = preg_replace('/^\{disabled\}/', '', $label);
+			}
 			$list .= self::tag('option', $item_params, $label);
 		}
 		unset($params['options'], $params['value']);

@@ -185,6 +185,9 @@ class MetaboxZero
 		foreach ($this->fields as $field){
 			$old = get_post_meta($post_id, $field['name'], true);
 			$new = $_POST[$field['name']];
+			if (array_key_exists('validate_callback', $field)){
+				$new = call_user_func($field['validate_callback'], $new);
+			}
 			if (is_array($new)) {
 				// save multiple meta entries if set to individual
 				if ($field['multiple'] == 'individual') {

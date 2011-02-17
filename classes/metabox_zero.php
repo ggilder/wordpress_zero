@@ -162,8 +162,9 @@ class MetaboxZero
 		}
 		// verify nonce
 		if (!wp_verify_nonce($_POST[$this->noncename], basename(__FILE__))) {
-			var_export($_POST);
-			die("bad nonce! nonce: {$this->noncename} value: {$_POST[$this->noncename]} post id: {$post_id}");
+			//var_export($_POST);
+			//die("bad nonce! nonce: {$this->noncename} value: {$_POST[$this->noncename]} post id: {$post_id}");
+			// this seems to get triggered a lot on non-page-related saves... kind of ridiculous
 			return $post_id;
 		}
 		// check permissions

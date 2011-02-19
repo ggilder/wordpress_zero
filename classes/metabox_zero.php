@@ -117,9 +117,6 @@ class MetaboxZero
 			}
 			
 			$meta = get_post_meta($post->ID, $field['name'], true);
-			if (strpos($meta, 'a:') === 0){
-				$meta = unserialize($meta);
-			}
 			
 			$out .= HTMLHelper::label(array('for'=>$field['name'], 'style'=>'display:block;', 'class'=>'field_label'), $field['label']);
 			
@@ -204,9 +201,6 @@ class MetaboxZero
 					
 					// skip normal meta processing
 					continue;
-				} else {
-					// default: serialize meta to one entry
-					$new = serialize($new);
 				}
 			}
 			if ($new !== '' && $new != $old) {
